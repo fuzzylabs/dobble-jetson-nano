@@ -10,14 +10,19 @@ dependencies:
   - libffi=3.3=he6710b0_2
   - libgcc-ng=9.1.0=hdf63c60_0
   - libstdcxx-ng=9.1.0=hdf63c60_0
+  - mypy=0.790=py_0
+  - mypy_extensions=0.4.3=py38_0
   - ncurses=6.2=he6710b0_1
   - openssl=1.1.1i=h27cfd23_0
   - pip=20.3.3=py38h06a4308_0
+  - psutil=5.7.2=py38h7b6447c_0
   - python=3.8.5=h7579374_1
   - readline=8.0=h7b6447c_0
   - setuptools=51.0.0=py38h06a4308_2
   - sqlite=3.33.0=h62c20be_0
   - tk=8.6.10=hbc83047_0
+  - typed-ast=1.4.1=py38h7b6447c_0
+  - typing_extensions=3.7.4.3=py_0
   - wheel=0.36.2=pyhd3eb1b0_0
   - xz=5.2.5=h7b6447c_0
   - zlib=1.2.11=h7b6447c_3
