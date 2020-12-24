@@ -1,4 +1,4 @@
-f"""
+"""
 This script uses the Kaggle dataset to generate a image classification training dataset for PyTorch
 
 * Each training example is an image with two Dobble cards
@@ -110,7 +110,6 @@ def create_training_files(training_set: Sequence[TrainingExample]):
 
         training_image.save(f"{TRAIN_BASE_DIR}/{bucket}/{label}/{file_num}.png")
         file_num += 1
-        
 
 labels = read_labels()
 print(f"Read {len(labels)} labels")
