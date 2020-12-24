@@ -57,9 +57,9 @@ def generate_training_set(cards: Sequence[LabelledCard]) -> Sequence[TrainingExa
     result = []
     for left_card in cards:
         for right_card in cards:
-            print(f"{left_card.labels}, {right_card.labels} -> {left_card.labels.intersection(right_card.labels)}")
-            common_symbol = left_card.labels.intersection(right_card.labels)
-            result.append(TrainingExample(left_card.card, right_card.card, common_symbol))
+            if left_card != right_card:
+                common_symbol = left_card.labels.intersection(right_card.labels)
+                result.append(TrainingExample(left_card.card, right_card.card, common_symbol))
 
     return result
 
@@ -70,7 +70,7 @@ card_symbol_mappings = read_card_symbol_mappings()
 print(f"Read {len(card_symbol_mappings)} card-symbol mappings")
 
 labelled_cards = label_cards(card_symbol_mappings, labels)
-print(f"Labelled all cards {labelled_cards[:3]}")
+print(f"Labelled all cards")
 
 training_set = generate_training_set(labelled_cards)
-print(training_set[0])
+print(f"Training set has {len(training_set)} examples - {training_set[0]}")
