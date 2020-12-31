@@ -1,6 +1,10 @@
-# Training
+# Introduction
 
-Dobble is a game with the aim to recognise matching symbols in a pair of disc-shaped cards. In this repository we aim to train an image classifier that can perform the same task, identifying which symbol is common.
+Dobble is a game with the aim to recognise matching symbols in a pair of disc-shaped cards. In this repository we aim to train an image classifier that can identify the common symbol in a pair of cards.
+
+Inspiration from https://www.hackster.io/aidventure/the-dobble-challenge-93d57c
+
+# Training
 
 As an example, consider the following two images:
 
