@@ -11,6 +11,8 @@ import io
 import os
 from PIL import Image
 import random
+from math import floor
+from tqdm import tqdm
 
 DATA_BASE_DIR = "data"
 TRAIN_BASE_DIR = "train"
@@ -110,25 +112,42 @@ def create_training_directories(labels: Sequence[str]):
         os.makedirs(f"{TRAIN_BASE_DIR}/test/{label}", exist_ok=True)
         os.makedirs(f"{TRAIN_BASE_DIR}/val/{label}", exist_ok=True)
 
-
-def create_training_files(training_set: Sequence[TrainingExample]):
-    file_num = 0
+def group_training_examples_by_label(training_set: Sequence[TrainingExample]) -> Dict[str, TrainingExample]:
+    training_example_groups = dict()
     for example in training_set:
-        training_image = generate_training_image(
-            example, "dobble_deck01_cards_57")
-        label = example.label
-
-        r = random.randint(0, 4)
-        if r % 5 == 0:
-            bucket = "test"
-        elif r % 5 == 1:
-            bucket = "val"
+        if example.label in training_example_groups:
+            training_example_groups[example.label] += [example]
         else:
-            bucket = "train"
+            training_example_groups[example.label] = [example]
 
-        training_image.save(
-            f"{TRAIN_BASE_DIR}/{bucket}/{label}/{file_num}.png")
-        file_num += 1
+    return training_example_groups
+
+def save_training_example(example: TrainingExample, bucket: str):
+    training_image = generate_training_image(
+        example, "dobble_deck01_cards_57")
+    label = example.label
+    filename = f"{example.left_card}_{example.right_card}.png"
+    training_image.save(
+        f"{TRAIN_BASE_DIR}/{bucket}/{label}/{filename}.png")
+
+def create_training_files(training_set: Sequence[TrainingExample], ):
+    groups = group_training_examples_by_label(training_set)
+    for group in groups:
+        examples = groups[group]
+        random.shuffle(examples)
+
+        n = len(examples)
+        train_split = floor(n * 0.6)
+        test_split = floor(n * 0.8)
+
+        for example in tqdm(examples[:train_split], desc=f"{group}_train"):
+            save_training_example(example, bucket="train")
+
+        for example in tqdm(examples[train_split:test_split], desc=f"{group}_test"):
+            save_training_example(example, bucket="test")
+
+        for example in tqdm(examples[test_split:], desc=f"{group}_val"):
+            save_training_example(example, bucket="val")
 
 
 labels = read_labels()
@@ -145,6 +164,10 @@ print(f"Training set has {len(training_set)} examples - {training_set[0]}")
 
 #im = generate_training_image(training_set[0], "dobble_deck01_cards_57")
 # im.show()
+
+# Select a subset of labels
+labels = dict(list(labels.items())[10:12])
+training_set = [x for x in training_set if x.label in labels.values()]
 
 create_training_directories(labels.values())
 create_training_label_file(labels.values())
