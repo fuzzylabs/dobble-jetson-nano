@@ -1,19 +1,18 @@
 import jetson.inference
 import jetson.utils
+import argparse
+
+parser = argparse.ArgumentParser(description="Detect Dobble images")
+
+parser.add_argument("source", type=str, help="Source to detect Dobble images on. Can be an image or a video stream (either a file or a device)")
+args = parser.parse_args()
 
 NET_DIR="models/dobble"
-
-print(f"--model {NET_DIR}/ssd-mobilenet.onnx --labels {NET_DIR}/labels.txt")
 
 net = jetson.inference.detectNet(
     argv=[f"--model={NET_DIR}/ssd-mobilenet.onnx", f"--labels={NET_DIR}/labels.txt", "--input-blob=input_0", "--output-cvg=scores", "--output-bbox=boxes"],
     threshold=0.5
 )
-
-_input = jetson.utils.videoSource("/dobble-jetson-nano/data/dobble/voc/JPEGImages/card50_01.jpg")
-img = _input.Capture()
-
-detections = net.Detect(img)
 
 def are_overlapping(a, b):
     ax0, ax1, ay0, ay1 = a.Left, a.Right, a.Top, a.Bottom
@@ -34,4 +33,13 @@ def remove_overlaps(detections):
 
     return _detections
 
-print([net.GetClassDesc(x.ClassID) for x in remove_overlaps(detections)])
+_input = jetson.utils.videoSource(args.source)
+
+while True:
+    img = _input.Capture()
+    detections = net.Detect(img)
+
+    print([net.GetClassDesc(x.ClassID) for x in remove_overlaps(detections)])
+
+    if not _input.IsStreaming():
+        break

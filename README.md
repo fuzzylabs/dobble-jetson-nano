@@ -7,11 +7,21 @@ Inspiration from https://www.hackster.io/aidventure/the-dobble-challenge-93d57c
 
 # Object detection
 
+## Image preparation and labeling
+Images need to be converted from TIF to JPEG for labeling (ImageMagick's `convert` tool is required)
+```
+./convert-images.sh
+```
+
+The resulting images are saved at `data/dobble/images/deck*_card*.jpg`. They now can be imported to LabelBox. 
+
+After the labeling is done in LabelBox, export the results to `data/dobble/labelbox_export.json`
+
 ## Dataset preparation
 In dobble-jetson-nano directory
 
 Required: 
-* `export.json` -- a labeled set from Labelbox
+* `data/dobble/labelbox_export.json` -- a labeled set from Labelbox
 * `data/dobble/images/*.jpg` -- images used for labeling
 
 ```
