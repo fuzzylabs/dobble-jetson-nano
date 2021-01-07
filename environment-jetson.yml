@@ -1,0 +1,47 @@
+name: dobble
+channels:
+  - c4aarch64
+  - conda-forge
+  - https://conda.anaconda.org/c4aarch64
+  - https://conda.anaconda.org/conda-forge
+dependencies:
+  - ca-certificates=2018.03.07=0
+  - zlib=1.2.11=h7b6447c_2
+  - _openmp_mutex=4.5=1_gnu
+  - certifi=2020.12.5=py38h2063c64_0
+  - freetype=2.10.4=h75e8696_0
+  - jpeg=9d=hfd2af3c_0
+  - lcms2=2.11=h025042b_1
+  - ld_impl_linux-aarch64=2.35.1=h02ad14f_1
+  - libffi=3.3=h884eca8_2
+  - libgcc-ng=9.3.0=h8ab15db_17
+  - libgomp=9.3.0=h8ab15db_17
+  - libpng=1.6.37=hbd635b3_2
+  - libstdcxx-ng=9.3.0=h7a64470_17
+  - libtiff=4.2.0=h2294b54_0
+  - libwebp-base=1.1.0=hb9de7d4_3
+  - lz4-c=1.9.2=he1b5a44_3
+  - ncurses=6.2=h7fd3ca4_4
+  - olefile=0.46=pyh9f0ad1d_1
+  - openssl=1.1.1i=hf897c2e_0
+  - pillow=8.0.1=py38he68bd5f_0
+  - pip=20.3.3=pyhd8ed1ab_0
+  - python=3.8.6=h3bd6a85_2_cpython
+  - python_abi=3.8=1_cp38
+  - readline=8.0=h607064a_2
+  - setuptools=49.6.0=py38h0cee959_2
+  - sqlite=3.34.0=h43e6a2a_0
+  - tk=8.6.10=ha99a2a3_1
+  - tqdm=4.55.1=pyhd8ed1ab_0
+  - wheel=0.36.2=pyhd3deb0d_0
+  - xz=5.2.5=h6dd45c4_1
+  - zstd=1.4.5=h6597ccf_2
+  - pip:
+    - dataclasses-json==0.5.2
+    - marshmallow==3.10.0
+    - marshmallow-enum==1.5.1
+    - mypy-extensions==0.4.3
+    - stringcase==1.2.0
+    - typing-extensions==3.7.4.3
+    - typing-inspect==0.6.0
+

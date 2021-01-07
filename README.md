@@ -4,6 +4,16 @@ Dobble is a game with the aim to recognise matching symbols in a pair of disc-sh
 
 Inspiration from https://www.hackster.io/aidventure/the-dobble-challenge-93d57c
 
+# Conda Environment
+
+The aarch64 version of conda can be got from [https://github.com/Archiconda/build-tools/releases](https://github.com/Archiconda/build-tools/releases)
+
+Conda environment then can be set up 
+
+```
+conda env create -f environment-jetson.yml
+conda activate dobble
+```
 
 # Object detection
 
