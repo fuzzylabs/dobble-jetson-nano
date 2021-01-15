@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json, config
 from typing import Optional, Sequence
 from PIL import Image
+import random
 
 IMAGE_BASE_DIR="data/dobble/images"
 VOC_FOLDER="data/dobble/voc"
@@ -128,11 +129,20 @@ def save_labels(labels: Sequence[str]):
             f.write(f"{label}\n")
 
 def save_default_image_set(annotations: Sequence[Annotation]):
-    with open(f"{VOC_FOLDER}/ImageSets/Main/default.txt", "w") as f:
-        for a in get_annotations(labelbox_export):
+    random.shuffle(annotations)
+    cutoff = int(len(annotations) * 0.8)
+    trainval = annotations[:cutoff]
+    test = annotations[cutoff:]
+
+    with open(f"{VOC_FOLDER}/ImageSets/Main/trainval.txt", "w") as f:
+        for a in trainval:
             f.write(a.filename.split('.')[0] + "\n")
 
-with open("export.json") as f:
+    with open(f"{VOC_FOLDER}/ImageSets/Main/test.txt", "w") as f:
+        for a in test:
+            f.write(a.filename.split('.')[0] + "\n")
+
+with open("data/dobble/labelbox_export.json") as f:
     labelbox_export = json.load(f)
 
 create_training_directories()

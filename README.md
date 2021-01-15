@@ -38,7 +38,7 @@ Required:
 python3 labelbox_to_voc.py
 ```
 
-Save VOC format dataset to `data/dobble/voc`.
+Saves VOC format dataset to `data/dobble/voc`.
 
 ## Training
 ```
@@ -51,9 +51,9 @@ docker/run.sh
 ```
 docker/run.sh
 # Starts Docker container with shell
-python detect-dobble.py
+python detect-dobble.py $SOURCE
 ```
-
+$SOURCE can be an image, a video, or a video device.
 
 # Training
 

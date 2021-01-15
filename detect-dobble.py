@@ -39,6 +39,7 @@ while True:
     img = _input.Capture()
     detections = net.Detect(img)
 
+    print([net.GetClassDesc(x.ClassID) for x in detections])
     print([net.GetClassDesc(x.ClassID) for x in remove_overlaps(detections)])
 
     if not _input.IsStreaming():
