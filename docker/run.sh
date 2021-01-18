@@ -45,7 +45,8 @@ die() {
 }
 
 # find container tag from L4T version
-source docker/tag.sh
+# source docker/tag.sh
+CONTAINER_IMAGE="dobble:latest"
 
 DETECTION_DIR="python/training/detection/ssd"
 JETSON_DOCKER_ROOT="/jetson-inference"	# where the jetson-inferenence lives in docker
