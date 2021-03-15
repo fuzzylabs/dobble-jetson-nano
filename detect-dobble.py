@@ -1,10 +1,15 @@
 import jetson.inference
 import jetson.utils
 import argparse
+from card_detection import detect_cards
+from card import *
+import cv2
 
 parser = argparse.ArgumentParser(description="Detect Dobble images")
 
 parser.add_argument("source", type=str, help="Source to detect Dobble images on. Can be an image or a video stream (either a file or a device)")
+parser.add_argument("output", type=str, nargs='?', help='Filename to output to')
+
 args = parser.parse_args()
 
 NET_DIR="models/dobble"
@@ -34,13 +39,37 @@ def remove_overlaps(detections):
     return _detections
 
 _input = jetson.utils.videoSource(args.source)
+if args.output is not None:
+    _output = jetson.utils.videoOutput(args.output)
 
 while True:
     img = _input.Capture()
-    detections = net.Detect(img)
+    numpyImg = jetson.utils.cudaToNumpy(img)
+    cards = [Card.from_numpy(*x) for x in detect_cards(numpyImg)]
 
-    print([net.GetClassDesc(x.ClassID) for x in detections])
-    print([net.GetClassDesc(x.ClassID) for x in remove_overlaps(detections)])
+    for i, card in enumerate(cards):
+        detections = net.Detect(card.cudaImg)
+        filtered_detections = remove_overlaps(detections)
+        # for x in filtered_detections:
+        #     print(x)
+        for x in filtered_detections:
+            card.add_object(net.GetClassDesc(x.ClassID), x)
+        # card.guesses = [Guess() for x in filtered_detections]
+        
 
+    # print([x.detectedObjects for x in cards])
+    match_name, confidence, detections = find_match(cards)
+    print("Match found: ", (match_name, confidence))
+    for x in detections:
+        print(x)
+
+    if _output is not None:
+        for detection in detections:
+            x, y, w, h = int(detection.Left), int(detection.Top), int(detection.Width), int(detection.Height)
+            print(x, y, w, h)
+            numpyImg = cv2.rectangle(numpyImg,(x,y),(x+w,y+h),(0,255,0),2)
+            cv2.putText(numpyImg,match_name,(x+w+10,y+h),0,0.3,(0,255,0))
+        img = jetson.utils.cudaFromNumpy(numpyImg)
+        _output.Render(img)
     if not _input.IsStreaming():
         break
