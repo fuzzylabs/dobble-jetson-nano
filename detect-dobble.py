@@ -60,15 +60,14 @@ while True:
     # print([x.detectedObjects for x in cards])
     match_name, confidence, detections = find_match(cards)
     print("Match found: ", (match_name, confidence))
-    for x in detections:
-        print(x)
+    # for x in detections:
+    #     print(x)
 
     if _output is not None:
         for detection in detections:
             x, y, w, h = int(detection.Left), int(detection.Top), int(detection.Width), int(detection.Height)
-            print(x, y, w, h)
             numpyImg = cv2.rectangle(numpyImg,(x,y),(x+w,y+h),(0,255,0),2)
-            cv2.putText(numpyImg,match_name,(x+w+10,y+h),0,0.3,(0,255,0))
+            cv2.putText(numpyImg,match_name,(x+w+10,y+h),0,1.5,(0,255,0))
         img = jetson.utils.cudaFromNumpy(numpyImg)
         _output.Render(img)
     if not _input.IsStreaming():
