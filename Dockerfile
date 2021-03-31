@@ -11,3 +11,13 @@ RUN pip install --upgrade pip && pip3 install imgaug
 # Live-patch training script with additional augmentation
 COPY /ssd-patch/transforms.py /jetson-inference/python/training/detection/ssd/vision/transforms/transforms.py
 COPY /ssd-patch/data_preprocessing.py /jetson-inference/python/training/detection/ssd/vision/ssd/data_preprocessing.py
+
+WORKDIR /dobble-jetson-nano
+
+COPY ./pytorch-ssd/. /dobble-jetson-nano/pytorch-ssd/
+COPY ./models/dobble/*onnx* /dobble-jetson-nano/models/dobble/
+COPY ./models/dobble/labels.txt /dobble-jetson-nano/models/dobble/
+COPY ./*.py /dobble-jetson-nano/
+COPY ./*.sh /dobble-jetson-nano/
+
+ENTRYPOINT [ "python3", "detect-dobble.py" ]
