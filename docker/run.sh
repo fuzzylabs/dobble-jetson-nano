@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 #
-# Start an instance of the jetson-inference docker container.
+# Start an instance of the dobble-jetson-nano docker container.
 # See below or run this script with -h or --help to see usage options.
 #
 # This script should be run from the root dir of the dobble-jetson-nano project:
 #
 #     $ docker/run.sh
 #
+
+set -x
 
 show_help() {
     echo " "
@@ -20,9 +22,6 @@ show_help() {
     echo " "
     echo "   --help                       Show this help text and quit"
     echo " "
-    echo "   -c, --container DOCKER_IMAGE Specifies the name of the Docker container"
-    echo "                                image to use (default: 'nvidia-l4t-base')"
-    echo " "
     echo "   -v, --volume HOST_DIR:MOUNT_DIR Mount a path from the host system into"
     echo "                                   the container.  Should be specified as:"
     echo " "
@@ -30,11 +29,13 @@ show_help() {
     echo " "
     echo "                                   (these should be absolute paths)"
     echo " "
-    echo "   -r, --run RUN_COMMAND  Command to run once the container is started."
-    echo "                          Note that this argument must be invoked last,"
-    echo "                          as all further arguments will form the command."
-    echo "                          If no run command is specified, an interactive"
-    echo "                          terminal into the container will be provided."
+    echo "   -s, --shell  Run container with shell instead of the inference script"
+    echo " "
+    echo "   -X  Enable X/GUI forwarding"
+    echo " "
+    echo "   -c, --camera  Mount camera devices"
+    echo " "
+    echo "   -t, --train Run training instead of inference (./data/dobble and ./models directories are mounted. SSD base model will be downloaded to ./models/ssd if it is not present)"
     echo " "
 }
 
@@ -44,51 +45,11 @@ die() {
     exit 1
 }
 
-# find container tag from L4T version
-# source docker/tag.sh
-CONTAINER_IMAGE="dobble:latest"
-
-DETECTION_DIR="python/training/detection/ssd"
-JETSON_DOCKER_ROOT="/jetson-inference"	# where the jetson-inferenence lives in docker
-DOBBLE_DOCKER_ROOT="/dobble-jetson-nano" # where this project lives
-
-# check for pytorch-ssd base model
-SSD_BASE_MODEL="$PWD/models/ssd/mobilenet-v1-ssd-mp-0_675.pth"
-
-if [ ! -f "$SSD_BASE_MODEL" ]; then
-	echo "Downloading pytorch-ssd base model..."
-    mkdir -p "$PWD/models/ssd/"
-	wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate https://nvidia.box.com/shared/static/djf5w54rjvpqocsiztzaandq1m3avr7c.pth -O $SSD_BASE_MODEL
-fi
-
-# generate mount commands
-DATA_VOLUME="\
---volume $PWD:$DOBBLE_DOCKER_ROOT \
---volume $PWD/models/ssd:$JETSON_DOCKER_ROOT/$DETECTION_DIR/models/"
-
-# parse user arguments
-USER_VOLUME=""
-USER_COMMAND=""
-
 while :; do
     case $1 in
         -h|-\?|--help)
             show_help    # Display a usage synopsis.
             exit
-            ;;
-        -c|--container)       # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                CONTAINER_IMAGE=$2
-                shift
-            else
-                die 'ERROR: "--container" requires a non-empty option argument.'
-            fi
-            ;;
-        --container=?*)
-            CONTAINER_IMAGE=${1#*=} # Delete everything up to "=" and assign the remainder.
-            ;;
-        --container=)         # Handle the case of an empty --image=
-            die 'ERROR: "--container" requires a non-empty option argument.'
             ;;
         -v|--volume)
             if [ "$2" ]; then
@@ -101,16 +62,30 @@ while :; do
         --volume=?*)
             USER_VOLUME=" -v ${1#*=} " # Delete everything up to "=" and assign the remainder.
             ;;
-        --volume=)         # Handle the case of an empty --image=
+        --volume=)         # Handle the case of an empty --volume=
             die 'ERROR: "--volume" requires a non-empty option argument.'
             ;;
-        -r|--run)
-            if [ "$2" ]; then
-                shift
-                USER_COMMAND=" $@ "
-            else
-                die 'ERROR: "--run" requires a non-empty option argument.'
-            fi
+        -s|--shell)
+            SHELL_ENTRYPOINT="--entrypoint /bin/bash"
+            ;;
+        -X)
+            XORG_FORWARD="-e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix -v /tmp/argus_socket:/tmp/argus_socket"
+            ;;
+        -c|--camera)
+            # check for V4L2 devices
+            V4L2_DEVICES=" "
+
+            for i in {0..9}
+            do
+                if [ -a "/dev/video$i" ]; then
+                    V4L2_DEVICES="$V4L2_DEVICES --device /dev/video$i "
+                fi
+            done
+
+            echo "V4L2_DEVICES:  $V4L2_DEVICES"
+            ;;
+        -t)
+            TRAINING_ENTRYPOINT="--entrypoint ./train_object_detection.sh"
             ;;
         --)              # End of all options.
             shift
@@ -126,30 +101,36 @@ while :; do
     shift
 done
 
-echo "CONTAINER:     $CONTAINER_IMAGE"
-echo "VOLUMES:       $DATA_VOLUME"
-echo "USER_VOLUME:   $USER_VOLUME"
-echo "USER_COMMAND:  $USER_COMMAND"
+CONTAINER_IMAGE="fuzzylabs/dobble-jetson-nano:latest"
 
-# check for V4L2 devices
-V4L2_DEVICES=" "
+DOBBLE_DOCKER_ROOT="/dobble-jetson-nano" # where this project lives
 
-for i in {0..9}
-do
-	if [ -a "/dev/video$i" ]; then
-		V4L2_DEVICES="$V4L2_DEVICES --device /dev/video$i "
-	fi
-done
+# If training SSD base model needs to be downloaded, and data and model directories need to be mounted
+if [ -n "$TRAINING_ENTRYPOINT" ]; then
+    # check for pytorch-ssd base model
+    SSD_BASE_MODEL="$PWD/models/ssd/mobilenet-v1-ssd-mp-0_675.pth"
 
-echo "V4L2_DEVICES:  $V4L2_DEVICES"
+    if [ ! -f "$SSD_BASE_MODEL" ]; then
+        echo "Downloading pytorch-ssd base model..."
+        mkdir -p "$PWD/models/ssd/"
+        wget --quiet --show-progress --progress=bar:force:noscroll --no-check-certificate https://nvidia.box.com/shared/static/djf5w54rjvpqocsiztzaandq1m3avr7c.pth -O $SSD_BASE_MODEL
+    fi
 
-# run the container
-sudo xhost +si:localuser:root
+    # generate mount commands
+    TRAINING_VOLUMES="\
+    --volume $PWD/data/dobble:$DOBBLE_DOCKER_ROOT/data/dobble \
+    --volume $PWD/models:$DOBBLE_DOCKER_ROOT/models"
+fi
 
-sudo docker run --runtime nvidia -it --rm --network host -e DISPLAY=$DISPLAY \
-    -v /tmp/.X11-unix/:/tmp/.X11-unix \
-    -v /tmp/argus_socket:/tmp/argus_socket \
-    -w $DOBBLE_DOCKER_ROOT \
-    $V4L2_DEVICES $DATA_VOLUME $USER_VOLUME \
-    $CONTAINER_IMAGE $USER_COMMAND
+# set xhost for X forwarding
+if [ -n "$XORG_FORWARD" ]; then
+    sudo xhost +si:localuser:root
+fi
 
+
+sudo docker run --runtime nvidia -it --rm \
+    $XORG_FORWARD \
+    $TRAINING_ENTRYPOINT $TRAINING_VOLUMES \
+    $SHELL_ENTRYPOINT \
+    $V4L2_DEVICES \
+    $CONTAINER_IMAGE

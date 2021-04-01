@@ -1,0 +1,3 @@
+[submodule "pytorch-ssd"]
+	path = pytorch-ssd
+	url = git@github.com:fuzzylabs/pytorch-ssd.git
