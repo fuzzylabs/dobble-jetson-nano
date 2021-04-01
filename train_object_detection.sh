@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SSD_BASE_PATH="/jetson-inference/python/training/detection/ssd"
+SSD_BASE_PATH="/dobble-jetson-nano/pytorch-ssd"
 TRAINING_SCRIPT="$SSD_BASE_PATH/train_ssd.py"
 ONNX_EXPORT="$SSD_BASE_PATH/onnx_export.py"
 PRETRAINED_SSD="/dobble-jetson-nano/models/ssd/mobilenet-v1-ssd-mp-0_675.pth"
