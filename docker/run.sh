@@ -101,9 +101,8 @@ while :; do
     shift
 done
 
-CONTAINER_IMAGE="fuzzylabsai/dobble-jetson-nano:latest"
+CONTAINER_IMAGE="fuzzylabs/dobble-jetson-nano:latest"
 
-JETSON_DOCKER_ROOT="/jetson-inference"	# where the jetson-inferenence lives in docker
 DOBBLE_DOCKER_ROOT="/dobble-jetson-nano" # where this project lives
 
 # If training SSD base model needs to be downloaded, and data and model directories need to be mounted

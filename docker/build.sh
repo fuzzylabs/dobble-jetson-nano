@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo docker build -t fuzzylabsai/dobble-jetson-nano .
+sudo docker build -t fuzzylabs/dobble-jetson-nano .
