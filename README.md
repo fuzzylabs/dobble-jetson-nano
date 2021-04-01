@@ -17,14 +17,45 @@ conda activate dobble
 ```
 
 # Custom Docker container
-To build:
+Before building or running it is advised to have nvidia docker runtime to be set as the default:
 ```
-docker/build.sh
+# /etc/docker/daemon.json 
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "/usr/bin/nvidia-container-runtime",
+            "runtimeArgs": []
+         } 
+    },
+    "default-runtime": "nvidia" 
+}
 ```
 
-To start:
+## Build
 ```
-docker/run.sh
+docker build -t fuzzylabsai/dobble-jetson-nano .
+```
+
+## Run
+```
+docker run --runtime nvidia -it --rm $additional_flags fuzzylabsai/dobble-jetson-nano $source [$output]
+```
+
+The default entrypoint is the inference script, that requires a source (an image file, a video file or a camera device). The output is optional
+
+Additional flags:
+* `--device $DEV` e.g. `--device /dev/video0` -- to mount camera devices used as a source
+* `-e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix -v /tmp/argus_socket:/tmp/argus_socket` -- pass DISPLAY environment variables and Xorg related files for GUI forwarding. 
+* `-v $HOST_FILES:$CONTAINER_FILES` -- to mount files/directories, such as a directory with source files, and a directory to persist outputs to
+
+An example of a full inference command:
+```
+docker run --runtime nvidia -it --rm --device /dev/video0 -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix -v /tmp/argus_socket:/tmp/argus_socket -v `pwd`/examples:./examples fuzzylabsai/dobble-jetson-nano ./examples/source.mp4 ./example/
+```
+
+To start a shell in the container (for example to train a model)
+```
+docker run --runtime nvidia -it --rm $additional_flags --entrypoint /bin/bash fuzzylabsai/dobble-jetson-nano
 ```
 
 # Object detection
